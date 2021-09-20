@@ -3,7 +3,7 @@
 ## Task 6
 ___
 
-### main.py
+## main.py
 Example of usage.
 
 ## sapper_input.py
