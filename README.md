@@ -3,6 +3,12 @@
 ## Task 6
 ___
 
+# Console screenshot
+
+![image](https://user-images.githubusercontent.com/63846736/134180288-28698841-9380-4518-8745-544ba0d607d3.png)
+
+___
+
 ## main.py
 Example of usage.
 
