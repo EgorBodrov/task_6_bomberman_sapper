@@ -6,7 +6,10 @@ Copyright by Bodrov Egor, 20.09.2021.
 """
 
 import os
+import sys
 import random
+import datetime
+import time
 
 from sapper_input import game_input
 
@@ -24,6 +27,9 @@ class Sapper:
         - bombs_number (int): Number of bombs number
         - field: 2D-list that is shown for user
         - bombs: 2D-list that contains bombs location and number of neighbors
+        - start_time: starting timer
+        - result_file: file with match data
+        - original_stdout: save stdout to choose between console and file
 
     Methods:
         - generate_bombs(): 
@@ -38,6 +44,8 @@ class Sapper:
             Open cell in specific row and column.
         - set_flag(row, column):
             Set flag in specific row and column.
+        - save_step(text=None):
+            Save text or field in file
         - play():
             Main method, calls other methods.
     """
@@ -50,6 +58,13 @@ class Sapper:
         self.field = [['x'] * self.columns for x in range(self.rows)]
         self.bombs = [[0] * self.columns for x in range(self.rows)]
 
+        self.start_time = time.time()
+        self.result_file = open(
+            f'{datetime.datetime.now().strftime(r"%d-%m-%y_%H-%M-%S_match.txt")}',
+            mode='a+'
+        )
+        self.original_stdout = sys.stdout
+
     def generate_bombs(self) -> None:
         generated = 0
         while generated < self.bombs_number:
@@ -60,8 +75,7 @@ class Sapper:
                 generated += 1
 
     def win_condition(self) -> bool:
-        pairs_of_rows = [zip(i, j) for i in self.field for j in self.bombs]
-        pairs = [x for sub in pairs_of_rows for x in sub]
+        pairs = list(zip(sum(self.field, []), sum(self.bombs, [])))
         if pairs.count((flag_sign, -1)) == self.bombs_number:
             return True
         return False
@@ -123,19 +137,33 @@ class Sapper:
         elif self.field[row][column] == flag_sign:
             self.field[row][column] = 'x'
 
+    def save_step(self, text=''):
+        sys.stdout = self.result_file
+        if text == '':
+            self.show()
+        else:
+            self.result_file.write(text + '\n')
+
+        sys.stdout = self.original_stdout
+
     def play(self) -> bool:
         os.system('cls')
         self.generate_bombs()
         self.count_bombs()
-        
+
         while self.win_condition() is False:
             self.show()
+            self.save_step()
+
             row, column, action = game_input(self.rows, self.columns)
+            self.save_step(text=f'{column + 1} {self.rows - row} {action}\n')
+
             if action == 'Open':
                 if self.bombs[row][column] == -1:
                     self.field[row][column] = boomed_sign
                     self.show()
                     print('YOU LOST!')
+                    self.save_step(text='YOU LOST!\n')
                     break
                 
                 self.open(row, column)
@@ -143,8 +171,12 @@ class Sapper:
                 self.set_flag(row, column)     
         else:
             self.show()
+            self.save_step()
             print('YOU WON!\n')
+            self.save_step(text='YOU WON!\n')
         
+        self.result_file.write(f'match duration: {time.time() - self.start_time}\n')
+        self.result_file.close()
         print('\nWant to play one more time? (Y/n)')
         answer = input()
         if answer.lower() in ('y', 'yes', 'да'):
