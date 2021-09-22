@@ -175,7 +175,8 @@ class Sapper:
             print('YOU WON!\n')
             self.save_step(text='YOU WON!\n')
         
-        self.result_file.write(f'match duration: {time.time() - self.start_time}\n')
+        self.result_file.write(f'match duration: {time.time() - self.start_time} seconds\n')
+        self.result_file.write(f'Parameters: {self.rows} rows, {self.columns} columns, {self.bombs_number} bombs')
         self.result_file.close()
         print('\nWant to play one more time? (Y/n)')
         answer = input()
